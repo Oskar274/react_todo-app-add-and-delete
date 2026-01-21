@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable max-len */
 /* eslint-disable no-console */
 /* eslint-disable jsx-a11y/label-has-associated-control */
@@ -40,10 +41,11 @@ export const App: React.FC = () => {
 
   const [todos, setTodos] = useState<Todo[]>([]);
   const [status, setStatus] = useState('all');
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [query, setQuery] = useState('');
   const [error, setError] = useState<ErrorType>(null);
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
+
   const visibleTodos = prepairedTodo(todos, status, query);
   const allTodos = tempTodo ? [...visibleTodos, tempTodo] : visibleTodos;
 
@@ -78,7 +80,6 @@ export const App: React.FC = () => {
 
   function handleEmptyTitle() {
     setError('EMPTY_TITLE');
-    setTimeout(() => setError(null), 3000);
   }
 
   function handleCreateTodo(title: string): Promise<void> {
@@ -86,7 +87,6 @@ export const App: React.FC = () => {
       return Promise.resolve();
     }
 
-    // Создаем временный todo
     const newTempTodo: Todo = {
       id: 0,
       userId: USER_ID,
@@ -95,25 +95,104 @@ export const App: React.FC = () => {
     };
 
     setTempTodo(newTempTodo);
+    setIsAdding(true);
+    setError(null);
 
     return createTodo({ title, userId: USER_ID, completed: false })
       .then((newTodo: Todo) => {
         setTodos(prev => [...prev, newTodo]);
         setTempTodo(null);
+        setIsAdding(false);
       })
       .catch(() => {
         setError('ADD_TODO');
         setTempTodo(null);
+        setIsAdding(false);
+        throw new Error();
       });
   }
 
   function deleteTodo(id: number) {
+    if (id === 0) {
+      return;
+    }
+
+    setTodos(prev =>
+      prev.map(todo => (todo.id === id ? { ...todo, isDeleting: true } : todo)),
+    );
+
     client
       .delete(`/todos/${id}`)
       .then(() => {
         setTodos(prev => prev.filter(todo => todo.id !== id));
       })
-      .catch(() => setError('DELETE_TODO'));
+      .catch(() => {
+        setError('DELETE_TODO');
+        setTodos(prev =>
+          prev.map(todo =>
+            todo.id === id ? { ...todo, isDeleting: false } : todo,
+          ),
+        );
+      });
+  }
+
+  function updateTodo(id: number, data: Partial<Todo>) {
+    setTodos(prev =>
+      prev.map(todo => (todo.id === id ? { ...todo, isUpdating: true } : todo)),
+    );
+
+    return client
+      .patch<Todo>(`/todos/${id}`, data)
+      .then(updatedTodo => {
+        setTodos(prev =>
+          prev.map(todo =>
+            todo.id === id ? { ...updatedTodo, isUpdating: false } : todo,
+          ),
+        );
+      })
+      .catch(() => {
+        setError('UPDATE_TODO');
+        setTodos(prev =>
+          prev.map(todo =>
+            todo.id === id ? { ...todo, isUpdating: false } : todo,
+          ),
+        );
+        throw new Error();
+      });
+  }
+
+  function toggleTodo(id: number) {
+    const todo = todos.find(t => t.id === id);
+
+    if (!todo) {
+      return;
+    }
+
+    updateTodo(id, { completed: !todo.completed });
+  }
+
+  function clearCompleted() {
+    const completedTodos = todos.filter(todo => todo.completed);
+
+    completedTodos.forEach(todo => {
+      deleteTodo(todo.id);
+    });
+  }
+
+  function toggleAll() {
+    const areAllCompleted = todos.every(todo => todo.completed);
+
+    if (areAllCompleted) {
+      todos.forEach(todo => {
+        updateTodo(todo.id, { completed: false });
+      });
+    } else {
+      todos
+        .filter(todo => !todo.completed)
+        .forEach(todo => {
+          updateTodo(todo.id, { completed: true });
+        });
+    }
   }
 
   return (
@@ -121,15 +200,28 @@ export const App: React.FC = () => {
       <h1 className="todoapp__title">todos</h1>
 
       <div className="todoapp__content">
-        <Header onCreate={handleCreateTodo} onEmpty={handleEmptyTitle} />
-        <TodoList todos={allTodos} onDelete={deleteTodo} />
+        <Header
+          onCreate={handleCreateTodo}
+          onEmpty={handleEmptyTitle}
+          hasActiveTodos={todos.length > 0}
+          onToggleAll={toggleAll}
+          areAllCompleted={todos.length > 0 && todos.every(t => t.completed)}
+        />
+        <TodoList
+          todos={allTodos}
+          onDelete={deleteTodo}
+          onToggle={toggleTodo}
+        />
         {todos.length > 0 && (
-          <Footer onStatusChange={setStatus} status={status} todos={todos} />
+          <Footer
+            onStatusChange={setStatus}
+            status={status}
+            todos={todos}
+            onClearCompleted={clearCompleted}
+          />
         )}
       </div>
 
-      {/* DON'T use conditional rendering to hide the notification */}
-      {/* Add the 'hidden' class to hide the message smoothly */}
       <ErrorNotification error={error} onClose={() => setError(null)} />
     </div>
   );

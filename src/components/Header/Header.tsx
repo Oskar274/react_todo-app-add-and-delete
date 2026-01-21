@@ -3,9 +3,18 @@ import { useState, useRef, useEffect } from 'react';
 type Props = {
   onCreate: (title: string) => Promise<void>;
   onEmpty?: () => void;
+  hasActiveTodos: boolean;
+  onToggleAll: () => void;
+  areAllCompleted: boolean;
 };
 
-export const Header: React.FC<Props> = ({ onCreate, onEmpty }) => {
+export const Header: React.FC<Props> = ({
+  onCreate,
+  onEmpty,
+  hasActiveTodos,
+  onToggleAll,
+  areAllCompleted,
+}) => {
   const [title, setTitle] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -30,23 +39,25 @@ export const Header: React.FC<Props> = ({ onCreate, onEmpty }) => {
     try {
       await onCreate(trimmed);
       setTitle('');
+    } catch (error) {
+    } finally {
       setIsLoading(false);
       setTimeout(() => {
         inputRef.current?.focus();
       }, 0);
-    } catch (error) {
-      setIsLoading(false);
-      inputRef.current?.focus();
     }
   }
 
   return (
     <header className="todoapp__header">
-      <button
-        type="button"
-        className="todoapp__toggle-all active"
-        data-cy="ToggleAllButton"
-      />
+      {hasActiveTodos && (
+        <button
+          type="button"
+          className={`todoapp__toggle-all ${areAllCompleted ? 'active' : ''}`}
+          data-cy="ToggleAllButton"
+          onClick={onToggleAll}
+        />
+      )}
 
       <form onSubmit={onSubmit}>
         <input
