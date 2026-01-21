@@ -20,13 +20,19 @@ export const App: React.FC = () => {
   function prepairedTodo(todos: Todo[], status: string, query: string): Todo[] {
     let result = [...todos];
 
+    enum TodoStatus {
+      All = 'all',
+      Active = 'active',
+      Completed = 'completed',
+    }
+
     switch (status) {
-      case 'all':
+      case TodoStatus.All:
         break;
-      case 'active':
+      case TodoStatus.Active:
         result = result.filter(todo => !todo.completed);
         break;
-      case 'completed':
+      case TodoStatus.Completed:
         result = result.filter(todo => todo.completed);
         break;
       default:
