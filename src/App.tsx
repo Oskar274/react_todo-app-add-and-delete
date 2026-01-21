@@ -43,7 +43,9 @@ export const App: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [query, setQuery] = useState('');
   const [error, setError] = useState<ErrorType>(null);
+  const [tempTodo, setTempTodo] = useState<Todo | null>(null);
   const visibleTodos = prepairedTodo(todos, status, query);
+  const allTodos = tempTodo ? [...visibleTodos, tempTodo] : visibleTodos;
 
   useEffect(() => {
     client
@@ -84,12 +86,24 @@ export const App: React.FC = () => {
       return Promise.resolve();
     }
 
+    // Создаем временный todo
+    const newTempTodo: Todo = {
+      id: 0,
+      userId: USER_ID,
+      title,
+      completed: false,
+    };
+
+    setTempTodo(newTempTodo);
+
     return createTodo({ title, userId: USER_ID, completed: false })
       .then((newTodo: Todo) => {
         setTodos(prev => [...prev, newTodo]);
+        setTempTodo(null);
       })
       .catch(() => {
         setError('ADD_TODO');
+        setTempTodo(null);
       });
   }
 
@@ -108,7 +122,7 @@ export const App: React.FC = () => {
 
       <div className="todoapp__content">
         <Header onCreate={handleCreateTodo} onEmpty={handleEmptyTitle} />
-        <TodoList todos={visibleTodos} onDelete={deleteTodo} />
+        <TodoList todos={allTodos} onDelete={deleteTodo} />
         {todos.length > 0 && (
           <Footer onStatusChange={setStatus} status={status} todos={todos} />
         )}

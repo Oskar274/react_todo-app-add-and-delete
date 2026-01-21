@@ -1,17 +1,14 @@
-/* eslint-disable jsx-a11y/label-has-associated-control */
 import { Todo } from '../../types/Todo';
 
+/* eslint-disable jsx-a11y/label-has-associated-control */
 type Props = {
   todo: Todo;
   onDelete: (id: number) => void;
-  isLoading?: boolean;
 };
 
-export const TodoItem: React.FC<Props> = ({
-  todo,
-  onDelete,
-  isLoading = false,
-}) => {
+export const TodoItem: React.FC<Props> = ({ todo, onDelete }) => {
+  const isTemp = todo.id === 0;
+
   return (
     <div data-cy="Todo" className={`todo ${todo.completed ? 'completed' : ''}`}>
       <label className="todo__status-label">
@@ -37,7 +34,7 @@ export const TodoItem: React.FC<Props> = ({
 
       <div
         data-cy="TodoLoader"
-        className={`modal overlay ${isLoading ? 'is-active' : ''}`}
+        className={`modal overlay ${isTemp ? 'is-active' : ''}`}
       >
         <div className="modal-background has-background-white-ter" />
         <div className="loader" />

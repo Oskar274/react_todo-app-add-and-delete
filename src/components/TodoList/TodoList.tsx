@@ -10,7 +10,11 @@ export const TodoList: React.FC<Props> = ({ todos, onDelete }) => {
   return (
     <section className="todoapp__main" data-cy="TodoList">
       {todos.map(todo => (
-        <TodoItem key={todo.id} todo={todo} onDelete={onDelete} />
+        <TodoItem
+          key={todo.id || `temp-${todo.title}`}
+          todo={todo}
+          onDelete={onDelete}
+        />
       ))}
     </section>
   );
