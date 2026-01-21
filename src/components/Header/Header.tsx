@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 type Props = {
   onCreate: (title: string) => Promise<void>;
@@ -6,6 +6,7 @@ type Props = {
   hasActiveTodos: boolean;
   onToggleAll: () => void;
   areAllCompleted: boolean;
+  inputRef: React.RefObject<HTMLInputElement>;
 };
 
 export const Header: React.FC<Props> = ({
@@ -14,10 +15,10 @@ export const Header: React.FC<Props> = ({
   hasActiveTodos,
   onToggleAll,
   areAllCompleted,
+  inputRef,
 }) => {
   const [title, setTitle] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     inputRef.current?.focus();

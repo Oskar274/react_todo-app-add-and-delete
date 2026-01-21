@@ -45,6 +45,7 @@ export const App: React.FC = () => {
   const [error, setError] = useState<ErrorType>(null);
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
   const [isAdding, setIsAdding] = useState(false);
+  const inputRef = React.useRef<HTMLInputElement>(null);
 
   const visibleTodos = prepairedTodo(todos, status, query);
   const allTodos = tempTodo ? [...visibleTodos, tempTodo] : visibleTodos;
@@ -125,6 +126,9 @@ export const App: React.FC = () => {
       .delete(`/todos/${id}`)
       .then(() => {
         setTodos(prev => prev.filter(todo => todo.id !== id));
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 0);
       })
       .catch(() => {
         setError('DELETE_TODO');
@@ -177,6 +181,10 @@ export const App: React.FC = () => {
     completedTodos.forEach(todo => {
       deleteTodo(todo.id);
     });
+
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
   }
 
   function toggleAll() {
@@ -206,6 +214,7 @@ export const App: React.FC = () => {
           hasActiveTodos={todos.length > 0}
           onToggleAll={toggleAll}
           areAllCompleted={todos.length > 0 && todos.every(t => t.completed)}
+          inputRef={inputRef}
         />
         <TodoList
           todos={allTodos}
