@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-len */
 import { Todo } from '../../types/Todo';
+import classNames from 'classnames';
 
 type Props = {
   status: string;
@@ -29,7 +30,9 @@ export const Footer: React.FC<Props> = ({
       <nav className="filter" data-cy="Filter">
         <a
           href="#/"
-          className={`filter__link ${status === 'all' ? 'selected' : ''}`}
+          className={classNames('filter__link', {
+            selected: status === 'all',
+          })}
           data-cy="FilterLinkAll"
           onClick={() => {
             onStatusChange('all');
@@ -40,7 +43,9 @@ export const Footer: React.FC<Props> = ({
 
         <a
           href="#/active"
-          className={`filter__link ${status === 'active' ? 'selected' : ''}`}
+          className={classNames('filter__link', {
+            selected: status === 'active',
+          })}
           data-cy="FilterLinkActive"
           onClick={() => {
             onStatusChange('active');

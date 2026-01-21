@@ -6,7 +6,13 @@
 //#region import
 import React, { useEffect, useState } from 'react';
 import { UserWarning } from './UserWarning';
-import { USER_ID } from './api/todos';
+import {
+  USER_ID,
+  getTodos,
+  createTodo,
+  updateTodo,
+  deleteTodo,
+} from './api/todos';
 import { Footer } from './components/Footer/Footer';
 import { Header } from './components/Header/Header';
 import { TodoList } from './components/TodoList/TodoList';
@@ -62,8 +68,7 @@ export const App: React.FC = () => {
   const allTodos = tempTodo ? [...visibleTodos, tempTodo] : visibleTodos;
 
   useEffect(() => {
-    client
-      .get<Todo[]>('/todos?userId=3838')
+    getTodos()
       .then(setTodos)
       .catch(() => setError('LOAD_TODOS'));
   }, []);
@@ -84,10 +89,6 @@ export const App: React.FC = () => {
 
   if (!USER_ID) {
     return <UserWarning />;
-  }
-
-  function createTodo({ title, userId, completed = false }: Omit<Todo, 'id'>) {
-    return client.post<Todo>('/todos', { title, userId, completed });
   }
 
   function handleEmptyTitle() {
@@ -124,7 +125,7 @@ export const App: React.FC = () => {
       });
   }
 
-  function deleteTodo(id: number) {
+  function handleDeleteTodo(id: number) {
     if (id === 0) {
       return;
     }
@@ -133,13 +134,10 @@ export const App: React.FC = () => {
       prev.map(todo => (todo.id === id ? { ...todo, isDeleting: true } : todo)),
     );
 
-    client
-      .delete(`/todos/${id}`)
+    deleteTodo(id)
       .then(() => {
         setTodos(prev => prev.filter(todo => todo.id !== id));
-        setTimeout(() => {
-          inputRef.current?.focus();
-        }, 0);
+        setTimeout(() => inputRef.current?.focus(), 0);
       })
       .catch(() => {
         setError('DELETE_TODO');
@@ -151,13 +149,12 @@ export const App: React.FC = () => {
       });
   }
 
-  function updateTodo(id: number, data: Partial<Todo>) {
+  function handleUpdateTodo(id: number, data: Partial<Todo>) {
     setTodos(prev =>
       prev.map(todo => (todo.id === id ? { ...todo, isUpdating: true } : todo)),
     );
 
-    return client
-      .patch<Todo>(`/todos/${id}`, data)
+    return updateTodo(id, data)
       .then(updatedTodo => {
         setTodos(prev =>
           prev.map(todo =>
@@ -183,7 +180,7 @@ export const App: React.FC = () => {
       return;
     }
 
-    updateTodo(id, { completed: !todo.completed });
+    handleUpdateTodo(id, { completed: !todo.completed });
   }
 
   function clearCompleted() {
@@ -203,7 +200,7 @@ export const App: React.FC = () => {
 
     if (areAllCompleted) {
       todos.forEach(todo => {
-        updateTodo(todo.id, { completed: false });
+        handleUpdateTodo(todo.id, { completed: false });
       });
     } else {
       todos
@@ -229,7 +226,7 @@ export const App: React.FC = () => {
         />
         <TodoList
           todos={allTodos}
-          onDelete={deleteTodo}
+          onDelete={handleDeleteTodo}
           onToggle={toggleTodo}
         />
         {todos.length > 0 && (
