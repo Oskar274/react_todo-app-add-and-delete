@@ -79,12 +79,12 @@ export const App: React.FC = () => {
     setTimeout(() => setError(null), 3000);
   }
 
-  function handleCreateTodo(title: string) {
+  function handleCreateTodo(title: string): Promise<void> {
     if (!USER_ID) {
-      return;
+      return Promise.resolve();
     }
 
-    createTodo({ title, userId: USER_ID, completed: false })
+    return createTodo({ title, userId: USER_ID, completed: false })
       .then((newTodo: Todo) => {
         setTodos(prev => [...prev, newTodo]);
       })

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable max-len */
 import { Todo } from '../../types/Todo';
 
 type Props = {
@@ -10,7 +12,8 @@ export const Footer: React.FC<Props> = ({ onStatusChange, status, todos }) => {
   return (
     <footer className="todoapp__footer" data-cy="Footer">
       <span className="todo-count" data-cy="TodosCounter">
-        {todos.filter(todo => !todo.completed).length} items left
+        {todos.filter(todo => !todo.completed && !(todo as any).isTemp).length}{' '}
+        items left
       </span>
 
       {/* Active link should have the 'selected' class */}
