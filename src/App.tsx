@@ -187,7 +187,7 @@ export const App: React.FC = () => {
     const completedTodos = todos.filter(todo => todo.completed);
 
     completedTodos.forEach(todo => {
-      deleteTodo(todo.id);
+      handleDeleteTodo(todo.id);
     });
 
     setTimeout(() => {
@@ -206,7 +206,7 @@ export const App: React.FC = () => {
       todos
         .filter(todo => !todo.completed)
         .forEach(todo => {
-          updateTodo(todo.id, { completed: true });
+          handleUpdateTodo(todo.id, { completed: true });
         });
     }
   }
