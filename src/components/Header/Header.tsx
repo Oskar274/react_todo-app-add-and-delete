@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react';
+import classNames from 'classnames';
 
 type Props = {
   onCreate: (title: string) => Promise<void>;
@@ -55,7 +56,9 @@ export const Header: React.FC<Props> = ({
       {hasActiveTodos && (
         <button
           type="button"
-          className={`todoapp__toggle-all ${areAllCompleted ? 'active' : ''}`}
+          className={classNames('todoapp__toggle-all', {
+            active: areAllCompleted,
+          })}
           data-cy="ToggleAllButton"
           onClick={onToggleAll}
         />
